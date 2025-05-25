@@ -2,10 +2,10 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "stb_image.h"
+#include <algorithm>
 
-bool TileMap::load(const std::string& mapFile, const std::string& tilesetFile, int tileWidth, int tileHeight, int tilesetCols) {
+bool TileMap::load(const std::string& mapFile, const std::string& tilesetFile, int tileWidth, int tileHeight, int tileCount) {
     std::ifstream in(mapFile);
     if (!in) return false;
 
@@ -17,7 +17,7 @@ bool TileMap::load(const std::string& mapFile, const std::string& tilesetFile, i
     }
 
     loadTexture(tilesetFile);
-    buildMesh(tileWidth, tileHeight, tilesetCols);
+    buildMesh(tileWidth, tileHeight, tileCount);
     return true;
 }
 
@@ -36,25 +36,28 @@ void TileMap::buildMesh(int tileWidth, int tileHeight, int tilesetCols) {
     std::vector<unsigned int> indices;
     int index = 0;
 
+    int tilesetWidth, tilesetHeight, channels;
+    stbi_info("assets/tilesetIso.png", &tilesetWidth, &tilesetHeight, &channels);
+
     for (int y = 0; y < mapHeight; ++y) {
         for (int x = 0; x < mapWidth; ++x) {
             int tileID = tiles[y * mapWidth + x];
             int tu = tileID % tilesetCols;
             int tv = tileID / tilesetCols;
 
-            float posX = (x - y) * tileWidth / 2.0f;
-            float posY = (x + y) * tileHeight / 2.0f;
+            float centerX = (x - y) * (tileWidth / 2.0f);
+            float centerY = (x + y) * (tileHeight / 2.0f);
 
-            float u0 = tu * (1.0f / tilesetCols);
-            float v0 = tv * (1.0f / tilesetCols); // aprox. (ajustar pela altura real)
-            float u1 = u0 + 1.0f / tilesetCols;
-            float v1 = v0 + 1.0f / tilesetCols;
+            float u0 = tu * (tileWidth / (float)tilesetWidth);
+            float v0 = tv * (tileHeight / (float)tilesetHeight);
+            float u1 = u0 + (tileWidth / (float)tilesetWidth);
+            float v1 = v0 + (tileHeight / (float)tilesetHeight);
 
             vertices.insert(vertices.end(), {
-                posX, posY, u0, v0,
-                posX + tileWidth / 2, posY + tileHeight / 2, u1, v0,
-                posX, posY + tileHeight, u1, v1,
-                posX - tileWidth / 2, posY + tileHeight / 2, u0, v1
+                centerX, centerY - tileHeight / 2, (u0 + u1) / 2, v0,           // topo
+                centerX + tileWidth / 2, centerY, u1, (v0 + v1) / 2,            // direita
+                centerX, centerY + tileHeight / 2, (u0 + u1) / 2, v1,           // baixo
+                centerX - tileWidth / 2, centerY, u0, (v0 + v1) / 2             // esquerda
             });
 
             indices.insert(indices.end(), {
@@ -86,4 +89,12 @@ void TileMap::draw() {
     glBindTexture(GL_TEXTURE_2D, textureID);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, mapWidth * mapHeight * 6, GL_UNSIGNED_INT, 0);
+}
+
+int TileMap::getWidth() const {
+    return mapWidth;
+}
+
+int TileMap::getHeight() const {
+    return mapHeight;
 }
