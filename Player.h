@@ -14,6 +14,7 @@ public:
 private:
     GLuint VAO, VBO, EBO, textureID;
     int tileWidth, tileHeight;
+    int textureWidth, textureHeight; // <-- Adicionado
 
     void loadTexture(const std::string& filename);
 };

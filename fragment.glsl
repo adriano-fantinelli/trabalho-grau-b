@@ -2,6 +2,11 @@
 out vec4 FragColor;
 in vec2 TexCoord;
 uniform sampler2D ourTexture;
+uniform vec4 debugSolidColor = vec4(0,0,0,0);
 void main() {
-    FragColor = texture(ourTexture, TexCoord);
+    if (debugSolidColor.a > 0.0) {
+        FragColor = debugSolidColor;
+    } else {
+        FragColor = texture(ourTexture, TexCoord);
+    }
 }

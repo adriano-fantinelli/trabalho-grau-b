@@ -66,31 +66,40 @@ int main() {
     Player player("assets/critter_stag_SE_idle.png", 32, 41);
     player.position = glm::vec2((mapWidth - 1) / 2.0f, (mapHeight - 1) / 2.0f);
 
+    // --- Adicionar controle de movimento do personagem ---
+    std::vector<int> tiles = map.getTiles();
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        int dx = 0, dy = 0;
+        // Movimento visual isométrico:
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    { dy -= 1; } // Cima visual (norte)
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  { dy += 1; } // Baixo visual (sul)
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  { dx -= 1; } // Esquerda visual (oeste)
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) { dx += 1; } // Direita visual (leste)
+        // Diagonais (Q, E, Z, C) para facilitar testes
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { dx -= 1; dy -= 1; } // NO
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { dx += 1; dy -= 1; } // NE
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) { dx -= 1; dy += 1; } // SO
+        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) { dx += 1; dy += 1; } // SE
+        if (dx != 0 || dy != 0) {
+            player.move(dx, dy, tiles, mapWidth, mapHeight);
+            glfwWaitEventsTimeout(0.15);
+        }
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
         glUseProgram(shaderProgram);
-
-        // Envie o centro para o shader
         glUniform2f(centerLoc, centerX, centerY);
-
-        // Controle do teclado
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) player.move(0, -1, map.getTiles(), mapWidth, mapHeight); // Norte
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) player.move(0, 1, map.getTiles(), mapWidth, mapHeight);  // Sul
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) player.move(-1, 0, map.getTiles(), mapWidth, mapHeight); // Oeste
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) player.move(1, 0, map.getTiles(), mapWidth, mapHeight);  // Leste
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) player.move(-1, -1, map.getTiles(), mapWidth, mapHeight); // Noroeste
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) player.move(1, -1, map.getTiles(), mapWidth, mapHeight);  // Nordeste
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) player.move(-1, 1, map.getTiles(), mapWidth, mapHeight); // Sudoeste
-        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) player.move(1, 1, map.getTiles(), mapWidth, mapHeight);  // Sudeste
-
-        // Desenhe o mapa e o personagem
+        GLint playerWorldPosLoc = glGetUniformLocation(shaderProgram, "playerWorldPos");
+        glUniform2f(playerWorldPosLoc, 0.0f, 0.0f);
         map.draw();
+        float tileX = player.position.x;
+        float tileY = player.position.y;
+        float px = (tileX - tileY) * (tileWidth / 2.0f);
+        float py = (tileX + tileY) * (tileHeight / 2.0f);
+        glUniform2f(playerWorldPosLoc, px, py);
         player.draw(shaderProgram, tileWidth, tileHeight);
-
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     glfwTerminate();

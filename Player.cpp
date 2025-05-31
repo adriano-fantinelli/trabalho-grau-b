@@ -1,18 +1,27 @@
 #include "Player.h"
 #include "stb_image.h"
 #include <iostream>
+#include <glm/glm.hpp>
 
 Player::Player(const std::string& textureFile, int tileWidth, int tileHeight)
     : tileWidth(tileWidth), tileHeight(tileHeight), position(0, 0) {
     loadTexture(textureFile);
 
-    // Configuração do VAO/VBO para o sprite do personagem
+    // Coordenadas de textura para o primeiro tile (32x41) do topo da imagem
+    float u0 = 0.0f;
+    float v0 = 0.0f;
+    float u1 = tileWidth / (float)textureWidth;
+    float v1 = tileHeight / (float)textureHeight;
+
+    // Ajuste para alinhar os pés do personagem ao centro do tile (abaixar 5px)
+    float yOffset = (tileHeight / 2.0f) - tileHeight + 5.0f;
+
     float vertices[] = {
-        // Posições      // Coordenadas de textura
-        -tileWidth / 2, -tileHeight / 2, 0.0f, 1.0f,
-         tileWidth / 2, -tileHeight / 2, 1.0f, 1.0f,
-         tileWidth / 2,  tileHeight / 2, 1.0f, 0.0f,
-        -tileWidth / 2,  tileHeight / 2, 0.0f, 0.0f,
+        // Posições         // Coordenadas de textura
+        -tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u0, v0, // canto inferior esquerdo
+         tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u1, v0, // canto inferior direito
+         tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u1, v1, // canto superior direito
+        -tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u0, v1  // canto superior esquerdo
     };
     unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -40,9 +49,12 @@ void Player::loadTexture(const std::string& filename) {
     unsigned char* data = stbi_load(filename.c_str(), &w, &h, &channels, 4);
     if (!data) {
         std::cerr << "Failed to load texture: " << filename << std::endl;
-        std::cerr << "STBI Error: " << stbi_failure_reason() << std::endl; // Adicione esta linha
+        std::cerr << "STBI Error: " << stbi_failure_reason() << std::endl;
         return;
     }
+    std::cout << "Player texture loaded: " << filename << " (" << w << "x" << h << ")" << std::endl;
+    textureWidth = w;
+    textureHeight = h;
 
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -60,12 +72,19 @@ void Player::draw(GLuint shaderProgram, float tileWidth, float tileHeight) {
     GLint loc = glGetUniformLocation(shaderProgram, "playerWorldPos");
     glUniform2f(loc, px, py);
 
+    // Remover debugSolidColor: usar textura
+    GLint debugColorLoc = glGetUniformLocation(shaderProgram, "debugSolidColor");
+    glUniform4f(debugColorLoc, 0.0f, 0.0f, 0.0f, 0.0f);
+
     glBindTexture(GL_TEXTURE_2D, textureID);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Player::move(int dx, int dy, const std::vector<int>& tiles, int mapWidth, int mapHeight) {
+    // Não normalizar dx/dy, pois já vem correto do main.cpp
+    if (dx == 0 && dy == 0) return;
+
     glm::vec2 newPosition = position + glm::vec2(dx, dy);
 
     // Verifique se a nova posição está dentro dos limites do mapa
@@ -73,8 +92,8 @@ void Player::move(int dx, int dy, const std::vector<int>& tiles, int mapWidth, i
         return;
 
     // Verifique se o tile é caminhável
-    int tileIndex = newPosition.y * mapWidth + newPosition.x;
-    if (tiles[tileIndex] != 0) // Suponha que 0 é um tile não caminhável
+    int tileIndex = (int)newPosition.y * mapWidth + (int)newPosition.x;
+    if (tiles[tileIndex] != 1) // Suponha que 1 é tile caminhável
         return;
 
     position = newPosition;
