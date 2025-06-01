@@ -12,7 +12,7 @@ public:
     int getHeight() const;
     const std::vector<int>& getTiles() const { return tiles; }
 private:
-    std::vector<int> tiles;  // Mude para 1D vector
+    std::vector<int> tiles;
     int width, height;
     GLuint VAO, VBO, EBO, textureID;
     int mapWidth, mapHeight;

@@ -7,21 +7,18 @@ Player::Player(const std::string& textureFile, int tileWidth, int tileHeight)
     : tileWidth(tileWidth), tileHeight(tileHeight), position(0, 0) {
     loadTexture(textureFile);
 
-    // Coordenadas de textura para o primeiro tile (32x41) do topo da imagem
     float u0 = 0.0f;
     float v0 = 0.0f;
     float u1 = tileWidth / (float)textureWidth;
     float v1 = tileHeight / (float)textureHeight;
 
-    // Ajuste para alinhar os pés do personagem ao centro do tile (abaixar 5px)
     float yOffset = (tileHeight / 2.0f) - tileHeight + 5.0f;
 
     float vertices[] = {
-        // Posições         // Coordenadas de textura
-        -tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u0, v0, // canto inferior esquerdo
-         tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u1, v0, // canto inferior direito
-         tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u1, v1, // canto superior direito
-        -tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u0, v1  // canto superior esquerdo
+        -tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u0, v0, 
+         tileWidth / 2.0f, -tileHeight / 2.0f + yOffset, u1, v0, 
+         tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u1, v1, 
+        -tileWidth / 2.0f,  tileHeight / 2.0f + yOffset, u0, v1 
     };
     unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -72,7 +69,6 @@ void Player::draw(GLuint shaderProgram, float tileWidth, float tileHeight) {
     GLint loc = glGetUniformLocation(shaderProgram, "playerWorldPos");
     glUniform2f(loc, px, py);
 
-    // Remover debugSolidColor: usar textura
     GLint debugColorLoc = glGetUniformLocation(shaderProgram, "debugSolidColor");
     glUniform4f(debugColorLoc, 0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -82,18 +78,16 @@ void Player::draw(GLuint shaderProgram, float tileWidth, float tileHeight) {
 }
 
 void Player::move(int dx, int dy, const std::vector<int>& tiles, int mapWidth, int mapHeight) {
-    // Não normalizar dx/dy, pois já vem correto do main.cpp
     if (dx == 0 && dy == 0) return;
 
     glm::vec2 newPosition = position + glm::vec2(dx, dy);
 
-    // Verifique se a nova posição está dentro dos limites do mapa
     if (newPosition.x < 0 || newPosition.y < 0 || newPosition.x >= mapWidth || newPosition.y >= mapHeight)
         return;
 
-    // Verifique se o tile é caminhável
     int tileIndex = (int)newPosition.y * mapWidth + (int)newPosition.x;
-    if (tiles[tileIndex] != 1) // Suponha que 1 é tile caminhável
+    int tileValue = tiles[tileIndex];
+    if (tileValue < 0 || tileValue > 6)
         return;
 
     position = newPosition;
