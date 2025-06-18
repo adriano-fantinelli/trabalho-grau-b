@@ -7,10 +7,20 @@ Player::Player(const std::string& textureFile, int tileWidth, int tileHeight)
     : tileWidth(tileWidth), tileHeight(tileHeight), position(0, 0) {
     loadTexture(textureFile);
 
-    float u0 = 0.0f;
+    // esse codigo pega o penúltimo sprite do personagem
+    int spriteIndex = 22;
+    float u0 = (spriteIndex * tileWidth) / (float)textureWidth;
+    float u1 = ((spriteIndex + 1) * tileWidth) / (float)textureWidth;
     float v0 = 0.0f;
-    float u1 = tileWidth / (float)textureWidth;
     float v1 = tileHeight / (float)textureHeight;
+
+
+
+    // esse codigo pega o primeiro sprite do personagem
+    // float u0 = 0.0f;
+    // float v0 = 0.0f;
+    // float u1 = tileWidth / (float)textureWidth;
+    // float v1 = tileHeight / (float)textureHeight;
 
     float yOffset = (tileHeight / 2.0f) - tileHeight + 5.0f;
 

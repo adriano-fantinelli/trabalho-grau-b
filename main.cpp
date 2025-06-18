@@ -63,8 +63,8 @@ int main()
 
     int centerLoc = glGetUniformLocation(shaderProgram, "center");
 
-    Player player("assets/critter_stag_SE_idle.png", 32, 41);
-    player.position = glm::vec2((mapWidth - 1) / 2.0f, (mapHeight - 1) / 2.0f);
+    Player player("assets/critter_stag_SE_idle.png", 32, 41); // imagem e tamanho do boneco
+    player.position = glm::vec2((mapWidth - 1) / 2.0f, (mapHeight - 1) / 2.0f); // inicializa o personagem no meio do mapa
 
     std::vector<int> tiles = map.getTiles();
     while (!glfwWindowShouldClose(window))
