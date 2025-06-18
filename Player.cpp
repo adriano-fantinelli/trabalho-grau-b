@@ -105,8 +105,14 @@ void Player::move(int dx, int dy, const std::vector<int>& tiles, int mapWidth, i
 
     int tileIndex = (int)newPosition.y * mapWidth + (int)newPosition.x;
     int tileValue = tiles[tileIndex];
-    if (tileValue < 0 || tileValue > 6)
+    
+    if (tileValue == 110)
         return;
 
     position = newPosition;
+    if (tileValue == 44 || tileValue == 33) {
+        setSpriteIndex(22);
+    } else {
+        setSpriteIndex(0);
+    }
 }
