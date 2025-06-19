@@ -97,6 +97,8 @@ int main() {
 
     // Carrega as moedas
     std::vector<Coin> coins = loadCoins("assets/coins.txt", 20, 20);
+    int coinsCollected = 0;
+    const int totalCoinsToWin = 5;
 
     std::vector<int> tiles = map.getTiles();
 
@@ -122,12 +124,18 @@ int main() {
             for (auto& coin : coins) {
                 if (!coin.isCollected() && coin.position == player.position) {
                     coin.collect();
+                    coinsCollected++;
+
+                    if (coinsCollected >= totalCoinsToWin) {
+                        std::cout << "Parabéns! Você coletou 5 moedas e venceu o jogo!\n";
+                        glfwSetWindowShouldClose(window, true); // Encerra o jogo
+                        break;
+                    }
                 }
             }
 
             glfwWaitEventsTimeout(0.15);
         }
-
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
