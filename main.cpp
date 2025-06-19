@@ -1,5 +1,6 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
+#include "Coin.h"
 #include "TileMap.h"
 #include <fstream>
 #include "Player.h"
@@ -66,6 +67,11 @@ int main()
     Player player("assets/critter_stag_SE_idle.png", 32, 41, 0); // imagem e tamanho do boneco, o ultimo parâmetro fala se o personagem está se pé (0) ou comendo (22)
     player.position = glm::vec2((mapWidth - 1) / 2.0f, (mapHeight - 1) / 2.0f); // inicializa o personagem no meio do mapa
 
+
+    std::vector<Coin> coins = {
+        Coin("assets/tileCoin.png", 20, 20, glm::vec2(5, 5)),
+        Coin("assets/tileCoin.png", 20, 20, glm::vec2(7, 6))
+    };
     std::vector<int> tiles = map.getTiles();
     while (!glfwWindowShouldClose(window))
     {
@@ -126,6 +132,12 @@ int main()
         float py = (tileX + tileY) * (tileHeight / 2.0f);
         glUniform2f(playerWorldPosLoc, px, py);
         player.draw(shaderProgram, tileWidth, tileHeight);
+
+        // desenha todas as moedas da lista coins na tela, uma por uma, usando o shader e o sistema de coordenadas isométricas
+        for (auto& coin : coins) {
+            coin.draw(shaderProgram, tileWidth, tileHeight);
+        }
+
         glfwSwapBuffers(window);
     }
 
