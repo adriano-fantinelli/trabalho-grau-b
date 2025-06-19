@@ -50,18 +50,15 @@ void Coin::loadTexture(const std::string& filename) {
 }
 
 void Coin::draw(GLuint shaderProgram, float tileWidth, float tileHeight) {
+    if (collected) return; // não desenha se já foi coletada
+
     float tileX = position.x;
     float tileY = position.y;
-    
-    // O eixo Y cresce para baixo, então subtrair offsetY empurra o sprite para cima, pra aparecer "flutuando"
-    float offsetY = 5.0f;
-
     float px = (tileX - tileY) * (tileWidth / 2.0f);
-    float py = (tileX + tileY) * (tileHeight / 2.0f) - offsetY;
+    float py = (tileX + tileY) * (tileHeight / 2.0f) - 8.0f; // deslocamento opcional
 
-
-    GLint playerWorldPosLoc = glGetUniformLocation(shaderProgram, "playerWorldPos");
-    glUniform2f(playerWorldPosLoc, px, py);
+    GLint loc = glGetUniformLocation(shaderProgram, "playerWorldPos");
+    glUniform2f(loc, px, py);
 
     GLint debugColorLoc = glGetUniformLocation(shaderProgram, "debugSolidColor");
     glUniform4f(debugColorLoc, 0.0f, 0.0f, 0.0f, 0.0f);

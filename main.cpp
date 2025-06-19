@@ -117,8 +117,17 @@ int main() {
 
         if (dx != 0 || dy != 0) {
             player.move(dx, dy, tiles, mapWidth, mapHeight);
+
+            // Verifica se o player coletou alguma moeda
+            for (auto& coin : coins) {
+                if (!coin.isCollected() && coin.position == player.position) {
+                    coin.collect();
+                }
+            }
+
             glfwWaitEventsTimeout(0.15);
         }
+
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
