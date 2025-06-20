@@ -67,7 +67,6 @@ void Player::loadTexture(const std::string& filename) {
         std::cerr << "STBI Error: " << stbi_failure_reason() << std::endl;
         return;
     }
-    std::cout << "Player texture loaded: " << filename << " (" << w << "x" << h << ")" << std::endl;
     textureWidth = w;
     textureHeight = h;
 
